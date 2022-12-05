@@ -22,9 +22,9 @@ def root():
 def get_meth():
     return {"data":my_post}
 
-@app.post("/createpost")
+@app.post("/posts")
 def create_post(new_post: Post):
-     print(new_post)
-     post_dict=new_post.dict()
+    post_dict=new_post.dict()
     post_dict['id']=randrange(0,100000)
+    my_post.append(post_dict)
     return {"data":post_dict}
