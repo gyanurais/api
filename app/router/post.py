@@ -10,15 +10,15 @@ router = APIRouter(
     tags=['Posts']
 )
 
-@router.get("/", response_model=List[schema.Postmeth])
+@router.get("/", response_model=List[schema.PostOut])
 def get_meth(db: session = Depends(get_db), current_user:int=Depends(oauth2.get_current_user), limit:int=8, skip:int=0, search:Optional[str]=""):
     # cursor.execute("""select * from posts """)
     # posts=cursor.fetchall()
     # print(posts) 
-    posts = db.query(models.Post).filter(models.Post.title.contains(search)).offset(skip).limit(limit).all()
+    # posts = db.query(models.Post).filter(models.Post.title.contains(search)).offset(skip).limit(limit).all()
 
-    results=db.query(models.Post, func.count(models.Vote.post_id).label("voetes")).join(
-        models.Vote, models.Vote.post_id==models.Post.id, isouter=True ).group_by(models.Post.id).all()
+    posts=db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(
+        models.Vote, models.Vote.post_id==models.Post.id, isouter=True ).group_by(models.Post.id).filter(models.Post.title.contains(search)).offset(skip).limit(limit).all()
     
     return  posts
 
@@ -49,8 +49,6 @@ def get_post(id: int, db: session=Depends(get_db), current_user:int=Depends(oaut
                             detail=f"post with id {id} was not found")
     return post
 
-
-
 # delete operation
 @router.delete("/{id}")
 def delete_post(id: int, db:session=Depends(get_db), current_user:int=Depends(oauth2.get_current_user)):
@@ -71,7 +69,6 @@ def delete_post(id: int, db:session=Depends(get_db), current_user:int=Depends(oa
     post.delete(synchronize_session=False)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
 
 
 # update

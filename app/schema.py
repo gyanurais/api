@@ -32,6 +32,13 @@ class Postmeth(Post):
     class Config:
         orm_mode=True
     
+class PostOut(BaseModel):
+    Post:Postmeth
+    votes:int
+
+    class Config:
+        orm_mode=True
+
 class UserLogin(BaseModel):
     email: EmailStr
     password:str
