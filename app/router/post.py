@@ -22,7 +22,6 @@ def get_meth(db: session = Depends(get_db), current_user:int=Depends(oauth2.get_
     
     return  posts
 
-
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schema.Postmeth)
 def create_post(post:schema.Postcreate, db: session=Depends(get_db), current_user:int=Depends(oauth2.get_current_user)):
     # cursor.execute("""INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING * """, (post.title, post.content, post.published))
@@ -38,11 +37,15 @@ def create_post(post:schema.Postcreate, db: session=Depends(get_db), current_use
 
 
 # get operation
-@router.get("/{id}", response_model=schema.Postmeth)
+@router.get("/{id}", response_model=schema.PostOut)
 def get_post(id: int, db: session=Depends(get_db), current_user:int=Depends(oauth2.get_current_user)):
     # cursor.execute("""SELECT * FROM posts WHERE id = %s """, (str(id)))
     # post = cursor.fetchone()
-    post=db.query(models.Post).filter(models.Post.id==id).first()
+    # post=db.query(models.Post).filter(models.Post.id==id).first()
+    
+    post=db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(
+        models.Vote, models.Vote.post_id==models.Post.id, isouter=True ).group_by(models.Post.id).filter(models.Post.id==id).first()
+    
     print(post)
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
